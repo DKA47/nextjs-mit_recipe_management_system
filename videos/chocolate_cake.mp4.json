@@ -1,0 +1,23 @@
+{
+  "status": "ready",
+  "originalFilePath": "videos\\chocolate_cake.mp4",
+  "provider": "mux",
+  "providerMetadata": {
+    "mux": {
+      "uploadId": "uAPl4hRfNnIiylXCdqEA4hDkXAJhg02edev00AgL9iNss",
+      "assetId": "hPPn7K3PUavnh9sUeU201lzUUrxyH21MwDrNUY7X0101E8",
+      "playbackId": "tJPIr1WUfKmysfNaSIuw3POOTJORjNhrY6cImoQhvCk"
+    }
+  },
+  "createdAt": 1713343006175,
+  "updatedAt": 1713343133175,
+  "size": 1750631,
+  "sources": [
+    {
+      "src": "https://stream.mux.com/tJPIr1WUfKmysfNaSIuw3POOTJORjNhrY6cImoQhvCk.m3u8",
+      "type": "application/x-mpegURL"
+    }
+  ],
+  "poster": "https://image.mux.com/tJPIr1WUfKmysfNaSIuw3POOTJORjNhrY6cImoQhvCk/thumbnail.webp",
+  "blurDataURL": "data:image/webp;base64,UklGRqQAAABXRUJQVlA4IJgAAABQAgCdASoQAAkAAQAcJYgCdAYplv3ILZ5yZ4AA/vRf/Qg+bff8bwLMfDm8+GoTsBzBSciQ6p31vYr3SB+9rabppXazwOQ0aF8xK2snf3Qzal8/LPd1n9cBZMmHnB9jBX/7349hd2hlLnkTqFyiH+x056Z5AN3tzmXQKFyjPdQQtNKHY77RqveUf7UiXpQWR1j+1EvaYAAAAA=="
+}
