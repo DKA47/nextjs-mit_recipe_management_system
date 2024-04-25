@@ -6,7 +6,7 @@ export default function Recipe() {
     return (
         <div className="text-white">
             <Image
-                src="/background.jpg"
+                src="/download.jpg"
                 alt="MIT Logo"
                 width={1000} // Adjust the width to make the image bigger
                 height={800} // Adjust the height to maintain aspect ratio

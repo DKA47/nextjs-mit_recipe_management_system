@@ -4,8 +4,12 @@ import React, { useState, useEffect } from 'react';
 import { Button, Space, Card, Modal, Form, Input, Skeleton } from 'antd';
 import { EyeOutlined, DeleteOutlined, EditOutlined, PlusOutlined } from '@ant-design/icons';
 import DataTable from '../../../components/data-table';
+import { useRouter } from 'next/navigation'; // Import useRouter from Next.js
+import { useSearchParams } from 'next/navigation'; // Import useSearchParams from Next.js
 
 const IndexPage = () => {
+  const router = useRouter(); // Initialize useRouter from Next.js
+  const params = useSearchParams(); // Get query parameters
   const [Categorydata, setData] = useState([]);
   const [isModalVisible, setIsModalVisible] = useState(false);
   const [isEditModalVisible, setIsEditModalVisible] = useState(false);
@@ -119,28 +123,10 @@ const IndexPage = () => {
     }
   };
 
-  const handleDelete = async (categoryId) => {
-    setDeleting(true);
-    try {
-      const response = await fetch('http://localhost:3000/api/categories', {
-        method: 'DELETE',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({ categoryId }),
-      });
-
-      if (response.ok) {
-        console.log('delete success');
-        fetchData();
-      } else {
-        console.error('Failed request:', response.status);
-      }
-    } catch (error) {
-      console.error('Error during request:', error);
-    } finally {
-      setDeleting(false);
-    }
+  const handleView = async (categoryId) => {
+    // Construct the new path with query parameters
+    const newPath = `/pages/client/recipe?CategoryId=${categoryId}`;
+    router.push(newPath);
   };
 
   const columns = [
@@ -152,9 +138,10 @@ const IndexPage = () => {
       key: 'actions',
       render: (text, record) => (
         <Space size="middle">
-          <Button icon={<EyeOutlined />} />
+          {/* <Button icon={<EyeOutlined />} /> */}
           {/* <Button icon={<EditOutlined />} onClick={() => showEditModal(record)} />
-          <Button icon={<DeleteOutlined />} onClick={() => handleDelete(record.categoryId)} /> */}
+          */}
+          <Button icon={<EyeOutlined />} onClick={() => handleView(record.categoryId)} />
         </Space>
       ),
     },

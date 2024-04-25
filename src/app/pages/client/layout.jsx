@@ -25,9 +25,9 @@ export default function Layout({ children }) {
                             Home
                         </div>
                     </Link>
-                    <Link href="/about" passHref>
+                    <Link href="./categories" passHref>
                         <div className="text-gray-800 hover:text-gray-600 transition duration-300 cursor-pointer">
-                            About
+                            GetStarted
                         </div>
                     </Link>
                     {/* Add more navigation links using Link component as needed */}

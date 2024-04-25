@@ -10,15 +10,15 @@ import { usePathname } from 'next/navigation';
 
 const links = [
   { name: 'Home', href: './home', icon: HomeIcon },
-  { name: 'Recipe', href: './recipe', icon: UserGroupIcon },
   {
     name: 'Categories',
     href: './categories',
     icon: DocumentDuplicateIcon,
   },
+  { name: 'Recipe', href: './recipe', icon: UserGroupIcon },
   {
-    name: 'Your Subscriptions',
-    href: './subscriptions',
+    name: 'Ingredients',
+    href: './ingredients',
     icon: DocumentDuplicateIcon,
   },
 ];

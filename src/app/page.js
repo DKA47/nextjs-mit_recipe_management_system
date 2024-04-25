@@ -25,10 +25,10 @@ export default function Page() {
               <span>Log in</span> <ArrowRightIcon className="w-5 md:w-6" />
             </Link>
             <Link
-              href="./pages/client/subscriptions"
+              href="../pages/registration"
               className="flex items-center rounded-full bg-blue-500 px-6 py-3 text-sm font-medium text-white transition-colors hover:bg-blue-400 md:text-base"
             >
-              <span>Subscribe</span> <ArrowRightIcon className="w-5 md:w-6" />
+              <span>Register</span> <ArrowRightIcon className="w-5 md:w-6" />
             </Link>
           </div>
         </div>

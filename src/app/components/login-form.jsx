@@ -37,8 +37,12 @@ const LoginForm = () => {
         console.log('Login successful:', responseData);
         message.success('Login successful');
 
-        // Redirect user to dashboard upon successful login
-        router.push('../pages/client/categories');
+        // Redirect user based on their credentials
+        if (email === 'admin@gmail.com') {
+          router.push('/pages/administrator/home'); // Redirect to admin page
+        } else {
+          router.push('/pages/client/subscriptions'); // Redirect to client page
+        }
       } else if (responseData.message === "error") {
         console.error('Authentication error:', responseData.message);
         message.error('Incorrect email/password combination');
@@ -53,6 +57,7 @@ const LoginForm = () => {
       setLoading(false);
     }
   };
+
 
   return (
     <main className="">

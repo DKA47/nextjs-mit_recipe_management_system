@@ -38,7 +38,7 @@ const IndexPage = () => {
 
     const handlePay = (invoiceId, amount, itemName) => {
         // Construct the new path with query parameters
-        const newPath = `/pages/client/payment?price=${amount}&invoiceId=${invoiceId}&itemName=${itemName}`;
+        const newPath = `/pages/client/payment?price=${amount}&itemName=${itemName}&invoiceId=${invoiceId}`;
         router.push(newPath);
     };
 
@@ -195,7 +195,7 @@ const IndexPage = () => {
                 <Space size="middle">
                     <Button icon={<PrinterOutlined />} onClick={() => handlePrint(record.invoiceId)} />
                     <Button icon={<CloseOutlined />} onClick={() => handleCancel(record.invoiceId)} />
-                    <Button icon={<DollarOutlined />} onClick={() => handlePay(record.invoiceId)} />
+                    <Button icon={<DollarOutlined />} onClick={() => handlePay(record.invoiceId, record.invoicePrice, record.customerName)} />
                 </Space>
             ),
         },
