@@ -36,20 +36,23 @@ export default function App() {
         gradient2.addColorStop(0.65, colors.indigo.quarter);
         gradient2.addColorStop(1, colors.indigo.zero);
 
-        const weight1 = [60.0, 60.2, 59.1, 61.4, 59.9, 60.2, 59.8, 58.6, 59.6, 59.2];
-        const weight2 = [58.0, 59.2, 58.1, 60.4, 58.9, 59.2, 58.8, 57.6, 58.6, 58.2];
+        const weight1 = [60.0, 60.2, 59.1, 61.4, 59.9, 60.2, 59.8, 58.6, 59.6, 59.2, , 58.6, 58.2];
+        const weight2 = [58.0, 59.2, 58.1, 60.4, 58.9, 59.2, 58.8, 57.6, 58.6, 58.2, 58.6, 58.2];
 
         const labels = [
-            "Week 1",
-            "Week 2",
-            "Week 3",
-            "Week 4",
-            "Week 5",
-            "Week 6",
-            "Week 7",
-            "Week 8",
-            "Week 9",
-            "Week 10"
+            "Jan",
+            "feb",
+            "mar",
+            "apr",
+            "may",
+            "jun",
+            "jul",
+            "aug",
+            "sep",
+            "oct",
+            "nov",
+            "dec",
+
         ];
 
         const data1 = {
@@ -57,7 +60,7 @@ export default function App() {
             datasets: [
                 {
                     backgroundColor: gradient1,
-                    label: "Dataset 1",
+                    label: "Invoices",
                     data: weight1,
                     fill: true,
                     borderWidth: 2,
@@ -74,7 +77,7 @@ export default function App() {
             datasets: [
                 {
                     backgroundColor: gradient2,
-                    label: "Dataset 2",
+                    label: "Payments",
                     data: weight2,
                     fill: true,
                     borderWidth: 2,
@@ -108,11 +111,11 @@ export default function App() {
     return (
         <div className="App" style={{ display: "flex" }}>
             <div style={{ flex: 1 }}>
-                <span>Chart 1</span>
+                <span>Invoices</span>
                 <canvas id="myChart1" ref={canvasEl1} height="100" />
             </div>
             <div style={{ flex: 1 }}>
-                <span>Chart 2</span>
+                <span>Payments</span>
                 <canvas id="myChart2" ref={canvasEl2} height="100" />
             </div>
         </div>

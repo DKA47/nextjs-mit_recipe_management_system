@@ -7,7 +7,7 @@ import DataTable from '../../../components/data-table';
 
 const IndexPage = () => {
   const [recipeData, setrecipeData] = useState([]);
-  // const [Categorydata, setData] = useState([]);
+  const [categories, setcategoriesData] = useState([]);
   const [isModalVisible, setIsModalVisible] = useState(false);
   const [isEditModalVisible, setIsEditModalVisible] = useState(false);
   const [isLoading, setLoading] = useState(false);
@@ -16,6 +16,7 @@ const IndexPage = () => {
 
   useEffect(() => {
     fetchRecipes();
+    fetchCategories();
   }, []);
 
   const fetchRecipes = async () => {
@@ -35,6 +36,25 @@ const IndexPage = () => {
       setLoading(false);
     }
   };
+
+  const fetchCategories = async () => {
+    setLoading(true);
+    try {
+      const response = await fetch('http://localhost:3000/api/get_recipe_cat');
+      if (response.ok) {
+        const jsonData = await response.json();
+        setcategoriesData(jsonData);
+        console.log(jsonData);
+      } else {
+        console.error('Failed to fetch data:', response.status);
+      }
+    } catch (error) {
+      console.error('Error fetching data:', error);
+    } finally {
+      setLoading(false);
+    }
+  };
+
   const showModal = () => {
     setIsModalVisible(true);
     form.resetFields();
@@ -65,7 +85,6 @@ const IndexPage = () => {
         },
         body: JSON.stringify({
           recipeName: values.recipeName,
-          Ingredients: values.Ingredients,
           categoryId: values.categoryId
         }),
       });
@@ -101,7 +120,6 @@ const IndexPage = () => {
         body: JSON.stringify({
           recipeId: values.recipeId,
           recipeName: values.recipeName,
-          Ingredients: values.Ingredient,
           categoryId: values.categoryId
         }),
       });
@@ -163,7 +181,7 @@ const IndexPage = () => {
       key: 'actions',
       render: (text, record) => (
         <Space size="middle">
-          <Button icon={<EyeOutlined />} />
+          {/* <Button icon={<EyeOutlined />} /> */}
           <Button icon={<EditOutlined />} onClick={() => showEditModal(record)} />
           <Button icon={<DeleteOutlined />} onClick={() => handleDelete(record.recipeId)} />
         </Space>
@@ -188,27 +206,21 @@ const IndexPage = () => {
           <DataTable dataSource={data} columns={columns} />
         </Skeleton>
         <Modal
-          title="Add New Category"
-          visible={isModalVisible}
+          title="Add New recipe"
+          open={isModalVisible}
           onCancel={handleCancel}
           footer={null}
         >
           <Form form={form} layout="vertical" onFinish={handleFinish}>
-            <Form.Item label="Category Name" name="recipeName" rules={[{ required: true, message: 'Please input the category name!' }]}>
-              <Input />
-            </Form.Item>
-            <Form.Item label="Description" name="Ingredient">
+            <Form.Item label="Recipe Name" name="recipeName" rules={[{ required: true, message: 'Please input the category name!' }]}>
               <Input />
             </Form.Item>
             <Form.Item label="Category" name="categoryId" rules={[{ required: true, message: 'Please select the category!' }]}>
               <Select>
-                <Select.Option value="13">BREAKFAST</Select.Option>
-                <Select.Option value="14">LUNCH</Select.Option>
-                <Select.Option value="15">DESERT</Select.Option>
                 {/* Add more static options as needed */}
-                {/* {categories.map(category => (
-                  <Select.Option key={category.id} value={category.id}>{category.name}</Select.Option>
-                ))} */}
+                 {categories.map(category => (
+                   <Select.Option key={category.id} value={category.id}>{category.catname}</Select.Option>
+                ))}
 
               </Select>
             </Form.Item>
@@ -220,31 +232,24 @@ const IndexPage = () => {
           </Form>
         </Modal>
         <Modal
-          title="Edit Category"
-          visible={isEditModalVisible}
+          title="Edit Recipe"
+          open={isEditModalVisible}
           onCancel={handleCancel}
           footer={null}
         >
           <Form form={form} layout="vertical" onFinish={handleFinish}>
-            <Form.Item name="recipeId">
+            <Form.Item name="recipeId" hidden>
               <Input />
             </Form.Item>
             <Form.Item label="Recipe Name" name="recipeName" rules={[{ required: true, message: 'Please input the category name!' }]}>
               <Input />
             </Form.Item>
-            <Form.Item label="Ingredient" name="Ingredient">
-              <Input />
-            </Form.Item>
             <Form.Item label="Category" name="categoryId" rules={[{ required: true, message: 'Please select the category!' }]}>
               <Select>
-                <Select.Option value="13">BREAKFAST</Select.Option>
-                <Select.Option value="14">LUNCH</Select.Option>
-                <Select.Option value="15">DESERT</Select.Option>
                 {/* Add more static options as needed */}
-                {/* {categories.map(category => (
-                  <Select.Option key={category.id} value={category.id}>{category.name}</Select.Option>
-                ))} */}
-
+                {categories.map(category => (
+                  <Select.Option key={category.id} value={category.id}>{category.catname}</Select.Option>
+                ))}
               </Select>
             </Form.Item>
             <Form.Item>

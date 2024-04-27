@@ -83,10 +83,10 @@ export async function DELETE(request) {
 
 export async function PUT(request) {
     try {
-        const { recipeId, categoryId, recipeName, Ingredients } = await request.json();
+        const { recipeId, categoryId, recipeName} = await request.json();
         const updateProducts = await query({
-            query: "UPDATE recipe SET recipename = ?, ingredients = ?, catid = ? WHERE id = ?",
-            values: [recipeName, Ingredients, categoryId, recipeId],
+            query: "UPDATE recipe SET recipename = ?, catid = ? WHERE id = ?",
+            values: [recipeName, categoryId, recipeId],
         });
         const result = updateProducts.affectedRows;
         let message = "";

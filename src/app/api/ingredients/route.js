@@ -81,10 +81,10 @@ export async function GET(request) {
 
 export async function DELETE(request) {
     try {
-        const { recipeId } = await request.json(); // Ensure that categoryId is extracted correctly from the request body
+        const { ingredient_id } = await request.json(); // Ensure that categoryId is extracted correctly from the request body
         const deleteUser = await query({
-            query: "DELETE FROM recipe WHERE id = ?",
-            values: [recipeId],
+            query: "DELETE FROM  recipe_ingredients WHERE ingredient_id = ?",
+            values: [ingredient_id],
         });
         const result = deleteUser.affectedRows;
         let message = "";
@@ -119,10 +119,10 @@ export async function DELETE(request) {
 
 export async function PUT(request) {
     try {
-        const { recipeId, categoryId, recipeName, Ingredients } = await request.json();
+        const { name,recipe_id, uom, ingredient_id, quantity } = await request.json();
         const updateProducts = await query({
-            query: "UPDATE recipe SET recipename = ?, ingredients = ?, catid = ? WHERE id = ?",
-            values: [recipeName, Ingredients, categoryId, recipeId],
+            query: "UPDATE recipe_ingredients SET name = ?, recipe_id = ?, uom = ?, quantity = ? WHERE ingredient_id = ?",
+            values: [name, recipe_id, uom, quantity, ingredient_id],
         });
         const result = updateProducts.affectedRows;
         let message = "";

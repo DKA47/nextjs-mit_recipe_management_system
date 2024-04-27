@@ -7,7 +7,7 @@ import DataTable from '../../../components/data-table';
 
 const IndexPage = () => {
     const [recipeData, setrecipeData] = useState([]);
-    // const [Categorydata, setData] = useState([]);
+    const [recipeselect, setrecipeselectData] = useState([]);
     const [isModalVisible, setIsModalVisible] = useState(false);
     const [isEditModalVisible, setIsEditModalVisible] = useState(false);
     const [isLoading, setLoading] = useState(false);
@@ -16,6 +16,7 @@ const IndexPage = () => {
 
     useEffect(() => {
         fetchIngredients();
+        fetchRecipe();
     }, []);
 
     const fetchIngredients = async () => {
@@ -35,6 +36,27 @@ const IndexPage = () => {
             setLoading(false);
         }
     };
+
+
+    const fetchRecipe = async () => {
+        setLoading(true);
+        try {
+            const response = await fetch('http://localhost:3000/api/get_recipe');
+            if (response.ok) {
+                const jsonData = await response.json();
+                setrecipeselectData(jsonData);
+                console.log(jsonData);
+            } else {
+                console.error('Failed to fetch data:', response.status);
+            }
+        } catch (error) {
+            console.error('Error fetching data:', error);
+        } finally {
+            setLoading(false);
+        }
+    };
+
+
     const showModal = () => {
         setIsModalVisible(true);
         form.resetFields();
@@ -43,10 +65,11 @@ const IndexPage = () => {
     const showEditModal = (record) => {
         setIsEditModalVisible(true);
         form.setFieldsValue({
-            recipeId: record.recipeId,
-            recipeName: record.RecipeName,
-            Ingredient: record.Ingredients,
-            categoryId: record.categoryId
+            ingredientId: record.ingredient_id,
+            name: record.name,
+            uom: record.uom,
+            categoryId: record.categoryId,
+            quantity: record.quantity
         });
     };
 
@@ -76,7 +99,7 @@ const IndexPage = () => {
                 console.log(responseData); // Log the response from the backend
                 if (responseData.message === "success") {
                     console.log("insert success");
-                    fetchRecipes(); // Fetch recipes after successful insert
+                    fetchIngredients()
                 } else {
                     console.error('Failed request:', responseData.error); // Log any error message from the backend
                 }
@@ -94,13 +117,13 @@ const IndexPage = () => {
     const handleUpdate = async (values) => {
         setLoading(true);
         try {
-            const response = await fetch(`http://localhost:3000/api/recipe`, {
+            const response = await fetch(`http://localhost:3000/api/ingredients`, {
                 method: 'PUT',
                 headers: {
                     'Content-Type': 'application/json',
                 },
                 body: JSON.stringify({
-                    ingredient_id: values.ingredient_id,
+                    ingredient_id: values.ingredientId,
                     recipe_id: values.recipe_id,
                     name: values.name,
                     uom: values.uom,
@@ -110,7 +133,7 @@ const IndexPage = () => {
 
             if (response.ok) {
                 console.log("update success");
-                fetchRecipes();
+                fetchIngredients();
             } else {
                 console.error('Failed request:', response.status);
             }
@@ -131,21 +154,21 @@ const IndexPage = () => {
         }
     };
 
-    const handleDelete = async (recipeId) => {
-        console.log(recipeId);
+    const handleDelete = async (ingredient_id) => {
+        console.log(ingredient_id);
         setDeleting(true);
         try {
-            const response = await fetch('http://localhost:3000/api/recipe', {
+            const response = await fetch('http://localhost:3000/api/ingredients', {
                 method: 'DELETE',
                 headers: {
                     'Content-Type': 'application/json',
                 },
-                body: JSON.stringify({ recipeId }),
+                body: JSON.stringify({ ingredient_id }),
             });
 
             if (response.ok) {
                 console.log('delete success');
-                fetchRecipes();
+                fetchIngredients()
             } else {
                 console.error('Failed request:', response.status);
             }
@@ -169,7 +192,7 @@ const IndexPage = () => {
                 <Space size="middle">
                     <Button icon={<EyeOutlined />} />
                     <Button icon={<EditOutlined />} onClick={() => showEditModal(record)} />
-                    <Button icon={<DeleteOutlined />} onClick={() => handleDelete(record.recipeId)} />
+                    <Button icon={<DeleteOutlined />} onClick={() => handleDelete(record.ingredient_id)} />
                 </Space>
             ),
         },
@@ -177,7 +200,7 @@ const IndexPage = () => {
 
     const data = recipeData.map((item) => ({
         key: item.ingredient_id,
-        ingredient_id: item.ingredient_id, 
+        ingredient_id: item.ingredient_id,
         recipe_id: item.recipe_id,
         name: item.name,
         uom: item.uom,
@@ -194,7 +217,7 @@ const IndexPage = () => {
                     <DataTable dataSource={data} columns={columns} />
                 </Skeleton>
                 <Modal
-                    title="Add New Category"
+                    title="Add New Ingredient"
                     visible={isModalVisible}
                     onCancel={handleCancel}
                     footer={null}
@@ -211,9 +234,9 @@ const IndexPage = () => {
                         </Form.Item>
                         <Form.Item label="Category" name="recipe_id" rules={[{ required: true, message: 'Please select the category!' }]}>
                             <Select>
-                                <Select.Option value="11">VANNILLA CAKE</Select.Option>
-                                <Select.Option value="12">CHOCOLATE CAKE</Select.Option>
-                                <Select.Option value="13">LEMON CAKE</Select.Option>
+                                {recipeselect.map(recipe => (
+                                    <Select.Option key={recipe.id} value={recipe.id}>{recipe.recipename}</Select.Option>
+                                ))}
                             </Select>
                         </Form.Item>
                         <Form.Item>
@@ -224,27 +247,30 @@ const IndexPage = () => {
                     </Form>
                 </Modal>
                 <Modal
-                    title="Edit Category"
+                    title="Edit Ingredient"
                     visible={isEditModalVisible}
                     onCancel={handleCancel}
                     footer={null}
                 >
                     <Form form={form} layout="vertical" onFinish={handleFinish}>
-                        <Form.Item name="recipeId">
+                        <Form.Item name="ingredientId">
                             <Input />
                         </Form.Item>
-                        <Form.Item label="Recipe Name" name="recipeName" rules={[{ required: true, message: 'Please input the category name!' }]}>
+                        <Form.Item label="Ingredient Name" name="name" rules={[{ required: true, message: 'Please input the category name!' }]}>
                             <Input />
                         </Form.Item>
-                        <Form.Item label="Ingredient" name="Ingredient">
+                        <Form.Item label="uom" name="uom">
                             <Input />
                         </Form.Item>
-                        <Form.Item label="Recipe" name="recipeId" rules={[{ required: true, message: 'Please select the category!' }]}>
+                        <Form.Item label="Recipe Name" name="recipeId" rules={[{ required: true, message: 'Please select the category!' }]}>
                             <Select>
-                                <Select.Option value="11">VANNILLA CAKE</Select.Option>
-                                <Select.Option value="12">CHOCOLATE CAKE</Select.Option>
-                                <Select.Option value="13">LEMON CAKE</Select.Option>
+                                {recipeselect.map(recipe => (
+                                    <Select.Option key={recipe.id} value={recipe.id}>{recipe.recipename}</Select.Option>
+                                ))}
                             </Select>
+                        </Form.Item>
+                        <Form.Item label="quantity" name="quantity">
+                            <Input />
                         </Form.Item>
                         <Form.Item>
                             <Button type="primary" htmlType="submit">
