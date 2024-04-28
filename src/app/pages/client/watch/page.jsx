@@ -1,11 +1,12 @@
 "use client"
 
 import React, { useState, useEffect } from "react";
-import { message } from "antd";
+import { message, Modal, Button } from "antd";
+import { VideoCameraOutlined } from '@ant-design/icons';
 
 export default function WatchVideo() {
-    const [loading, setLoading] = useState(false);
     const [videoSrc, setVideoSrc] = useState(null);
+    const [modalVisible, setModalVisible] = useState(false); // State for controlling modal visibility
 
     useEffect(() => {
         // Function to parse URL parameters
@@ -27,17 +28,39 @@ export default function WatchVideo() {
         }
     }, []);
 
+    const openModal = () => {
+        setModalVisible(true);
+    };
+
+    const closeModal = () => {
+        setModalVisible(false);
+    };
+
     return (
-        <div>
-            {videoSrc && (
-                <div>
-                    <h1>Watch Video</h1>
+        <div style={{ textAlign: 'center', marginTop: '100px' }}>
+            <h1>Click to Watch</h1>
+            <div className="video-container" style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', height: '20vh' }}>
+                {videoSrc && (
+                    <Button
+                        icon={<VideoCameraOutlined />}
+                        size="large" // Set button size to large
+                        style={{ fontSize: '36px' }} // Increase button font size
+                        onClick={openModal}
+                    />
+                )}
+                <Modal
+                    title="Watch Video"
+                    visible={modalVisible}
+                    onCancel={closeModal}
+                    footer={null}
+                    centered
+                >
                     <video controls width="600" height="400">
                         <source src={`${videoSrc}`} type="video/mp4" />
                         Your browser does not support the video tag.
                     </video>
-                </div>
-            )}
+                </Modal>
+            </div>
         </div>
     );
 }

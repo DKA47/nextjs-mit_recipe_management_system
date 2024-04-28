@@ -1,13 +1,12 @@
 "use client"
 
 import React, { useState, useEffect } from 'react';
-import { Button, Space, Card, Modal, Form, Input, Skeleton, Select } from 'antd';
+import { Button, Space, Card, Modal, Form, Input, Skeleton } from 'antd';
 import { EyeOutlined, DeleteOutlined, EditOutlined, PlusOutlined } from '@ant-design/icons';
 import DataTable from '../../../components/data-table';
 
 const IndexPage = () => {
-    const [recipeData, setrecipeData] = useState([]);
-    const [recipeselect, setrecipeselectData] = useState([]);
+    const [Requestdata, setData] = useState([]);
     const [isModalVisible, setIsModalVisible] = useState(false);
     const [isEditModalVisible, setIsEditModalVisible] = useState(false);
     const [isLoading, setLoading] = useState(false);
@@ -16,18 +15,16 @@ const IndexPage = () => {
     const [searchValue, setSearchValue] = useState('');
 
     useEffect(() => {
-        fetchIngredients();
-        fetchRecipe();
+        fetchData();
     }, []);
 
-    const fetchIngredients = async () => {
+    const fetchData = async () => {
         setLoading(true);
         try {
-            const response = await fetch('http://localhost:3000/api/ingredients');
+            const response = await fetch('http://localhost:3000/api/request');
             if (response.ok) {
                 const jsonData = await response.json();
-                setrecipeData(jsonData);
-                console.log(jsonData);
+                setData(jsonData);
             } else {
                 console.error('Failed to fetch data:', response.status);
             }
@@ -37,26 +34,6 @@ const IndexPage = () => {
             setLoading(false);
         }
     };
-
-
-    const fetchRecipe = async () => {
-        setLoading(true);
-        try {
-            const response = await fetch('http://localhost:3000/api/get_recipe');
-            if (response.ok) {
-                const jsonData = await response.json();
-                setrecipeselectData(jsonData);
-                console.log(jsonData);
-            } else {
-                console.error('Failed to fetch data:', response.status);
-            }
-        } catch (error) {
-            console.error('Error fetching data:', error);
-        } finally {
-            setLoading(false);
-        }
-    };
-
 
     const showModal = () => {
         setIsModalVisible(true);
@@ -66,11 +43,9 @@ const IndexPage = () => {
     const showEditModal = (record) => {
         setIsEditModalVisible(true);
         form.setFieldsValue({
-            ingredientId: record.ingredient_id,
-            name: record.name,
-            uom: record.uom,
-            categoryId: record.categoryId,
-            quantity: record.quantity
+            requestId: record.requestId,
+            request: record.requestName,
+            description: record.description,
         });
     };
 
@@ -82,28 +57,20 @@ const IndexPage = () => {
     const handleInsert = async (values) => {
         setLoading(true);
         try {
-            const response = await fetch('http://localhost:3000/api/ingredients', {
+            const response = await fetch('http://localhost:3000/api/request', {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
                 },
                 body: JSON.stringify({
-                    recipe_id: values.recipe_id,
-                    name: values.name,
-                    uom: values.uom,
-                    quantity: values.quantity,
+                    recipe: values.recipe,
+                    description: values.description,
                 }),
             });
 
             if (response.ok) {
-                const responseData = await response.json();
-                console.log(responseData); // Log the response from the backend
-                if (responseData.message === "success") {
-                    console.log("insert success");
-                    fetchIngredients()
-                } else {
-                    console.error('Failed request:', responseData.error); // Log any error message from the backend
-                }
+                console.log("insert success");
+                fetchData();
             } else {
                 console.error('Failed request:', response.status);
             }
@@ -116,26 +83,25 @@ const IndexPage = () => {
     };
 
     const handleUpdate = async (values) => {
-        console.log(values)
-;        setLoading(true);
+
+        console.log(values);
+        setLoading(true);
         try {
-            const response = await fetch(`http://localhost:3000/api/ingredients`, {
+            const response = await fetch(`http://localhost:3000/api/request`, {
                 method: 'PUT',
                 headers: {
                     'Content-Type': 'application/json',
                 },
                 body: JSON.stringify({
-                    ingredient_id: values.ingredientId,
-                    recipe_id: values.recipe_id,
-                    name: values.name,
-                    uom: values.uom,
-                    quantity: values.quantity,
+                    requestId: values.requestId,
+                    req: values.request,
+                    description: values.description
                 }),
             });
 
             if (response.ok) {
                 console.log("update success");
-                fetchIngredients();
+                fetchData();
             } else {
                 console.error('Failed request:', response.status);
             }
@@ -149,28 +115,27 @@ const IndexPage = () => {
 
     const handleFinish = async (values) => {
         event.preventDefault();
-        if (values.recipeId) {
+        if (values.requestId) {
             handleUpdate(values);
         } else {
             handleInsert(values);
         }
     };
 
-    const handleDelete = async (ingredient_id) => {
-        console.log(ingredient_id);
+    const handleDelete = async (requestId) => {
         setDeleting(true);
         try {
-            const response = await fetch('http://localhost:3000/api/ingredients', {
+            const response = await fetch('http://localhost:3000/api/request', {
                 method: 'DELETE',
                 headers: {
                     'Content-Type': 'application/json',
                 },
-                body: JSON.stringify({ ingredient_id }),
+                body: JSON.stringify({ requestId }),
             });
 
             if (response.ok) {
                 console.log('delete success');
-                fetchIngredients()
+                fetchData();
             } else {
                 console.error('Failed request:', response.status);
             }
@@ -185,78 +150,72 @@ const IndexPage = () => {
         setSearchValue(value);
     };
 
-    const filteredData = recipeData.filter((item) =>
+    const filteredData = Requestdata.filter((item) =>
         Object.values(item).some(
             (val) => typeof val === 'string' && val.toLowerCase().includes(searchValue.toLowerCase())
         )
     );
 
     const columns = [
-        { title: 'ingredient id', dataIndex: 'ingredient_id', key: 'ingredient_id' },
-        { title: 'recipe id', dataIndex: 'recipe_id', key: 'recipe_id' },
-        { title: 'name', dataIndex: 'name', key: 'name' },
-        { title: 'uom', dataIndex: 'uom', key: 'uom' },
-        { title: 'quantity', dataIndex: 'quantity', key: 'quantity' },
+        { title: 'No', dataIndex: 'requestId', key: 'requestId' },
+        { title: 'Recipe', dataIndex: 'requestName', key: 'requestName' },
+        { title: 'Description', dataIndex: 'description', key: 'description' },
+        { title: 'Status', dataIndex: 'status', key: 'status' },
+        { title: 'Date', dataIndex: 'date', key: 'date' },
         {
             title: 'Actions',
             key: 'actions',
             render: (text, record) => (
                 <Space size="middle">
-                    <Button icon={<EyeOutlined />} />
-                    <Button icon={<EditOutlined />} onClick={() => showEditModal(record)} />
-                    <Button icon={<DeleteOutlined />} onClick={() => handleDelete(record.ingredient_id)} />
+                    {record.status === 'pending' && (
+                        <>
+                            <Button icon={<EditOutlined />} onClick={() => showEditModal(record)} />
+                            <Button icon={<DeleteOutlined />} onClick={() => handleDelete(record.requestId)} />
+                        </>
+                    )}
                 </Space>
             ),
         },
     ];
 
     const data = filteredData.map((item) => ({
-        key: item.ingredient_id,
-        ingredient_id: item.ingredient_id,
-        recipe_id: item.recipe_id,
-        name: item.name,
-        uom: item.uom,
-        quantity: item.quantity
+        key: item.id,
+        requestId: item.id,
+        requestName: item.RecipeTypeName,
+        description: item.description,
+        status: item.state,
+        date: item.reqDate,
     }));
 
     return (
         <div>
             <Card>
-                <div style={{ marginBottom: 16 }}>
-                    <Button type="primary" icon={<PlusOutlined />} onClick={showModal}>
-                        Add ingredient for recipe
-                    </Button>
-                    <Input.Search
-                        placeholder="Search..."
-                        style={{ width: 200, marginLeft: 10 }}
-                        onSearch={handleSearch}
-                    />
-                </div>
+                <Button type="primary" icon={<PlusOutlined />} onClick={showModal} style={{ marginBottom: 16 }}>
+                    Add New Request
+                </Button>
+                <Input.Search
+                    placeholder="Search..."
+                    style={{ width: 200, marginBottom: 16, marginLeft: 40 }}
+                    onSearch={handleSearch}
+                />
                 <Skeleton active={isLoading || isDeleting} loading={isLoading || isDeleting}>
                     <DataTable dataSource={data} columns={columns} />
                 </Skeleton>
                 <Modal
-                    title="Add New Ingredient"
+                    title="Add New Request"
                     visible={isModalVisible}
                     onCancel={handleCancel}
                     footer={null}
                 >
                     <Form form={form} layout="vertical" onFinish={handleFinish}>
-                        <Form.Item label="name" name="name">
+                        <Form.Item name="requestId" hidden>
                             <Input />
                         </Form.Item>
-                        <Form.Item label="uom" name="uom">
+                        <Form.Item label="Recipe" name="recipe" rules={[{ required: true, message: 'Please input the category name!' }]}>
                             <Input />
                         </Form.Item>
-                        <Form.Item label="quantity" name="quantity">
+                        <Form.Item label="Description" name="description">
                             <Input />
-                        </Form.Item>
-                        <Form.Item label="Category" name="recipe_id" rules={[{ required: true, message: 'Please select the category!' }]}>
-                            <Select>
-                                {recipeselect.map(recipe => (
-                                    <Select.Option key={recipe.id} value={recipe.id}>{recipe.recipename}</Select.Option>
-                                ))}
-                            </Select>
                         </Form.Item>
                         <Form.Item>
                             <Button type="primary" htmlType="submit">
@@ -266,29 +225,19 @@ const IndexPage = () => {
                     </Form>
                 </Modal>
                 <Modal
-                    title="Edit Ingredient"
+                    title="Edit Category"
                     visible={isEditModalVisible}
                     onCancel={handleCancel}
                     footer={null}
                 >
                     <Form form={form} layout="vertical" onFinish={handleFinish}>
-                        <Form.Item name="ingredientId">
+                        <Form.Item name="requestId" hidden>
                             <Input />
                         </Form.Item>
-                        <Form.Item label="Ingredient Name" name="name" rules={[{ required: true, message: 'Please input the category name!' }]}>
+                        <Form.Item label="Recipe" name="request" rules={[{ required: true, message: 'Please input the category name!' }]}>
                             <Input />
                         </Form.Item>
-                        <Form.Item label="uom" name="uom">
-                            <Input />
-                        </Form.Item>
-                        <Form.Item label="Recipe Name" name="recipeId" rules={[{ required: true, message: 'Please select the category!' }]}>
-                            <Select>
-                                {recipeselect.map(recipe => (
-                                    <Select.Option key={recipe.id} value={recipe.id}>{recipe.recipename}</Select.Option>
-                                ))}
-                            </Select>
-                        </Form.Item>
-                        <Form.Item label="quantity" name="quantity">
+                        <Form.Item label="Description" name="description">
                             <Input />
                         </Form.Item>
                         <Form.Item>
@@ -304,4 +253,3 @@ const IndexPage = () => {
 };
 
 export default IndexPage;
-

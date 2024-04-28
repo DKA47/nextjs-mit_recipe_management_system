@@ -2,13 +2,13 @@ import { query } from "../../../lib/db";
 
 export async function POST(request) {
     try {
-        const { restrictionId, recipeName, categoryId } = await request.json();
+        const { restriction, description } = await request.json();
         // Adjust the query to insert the categoryId into the recipe table
-        const insertRecipe = await query({
-            query: "INSERT INTO recipe (restriction_id,recipename, catid) VALUES (?, ?, ?)",
-            values: [restrictionId, recipeName, categoryId],
+        const insertRestriction = await query({
+            query: "INSERT INTO diet_restrictions (restriction, description) VALUES (?, ?)",
+            values: [restriction, description],
         });
-        const result = insertRecipe.affectedRows;
+        const result = insertRestriction.affectedRows;
         let message = "";
         if (result) {
             message = "success";

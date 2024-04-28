@@ -22,7 +22,7 @@ const IndexPage = () => {
     const fetchInvoices = async () => {
         setLoading(true);
         try {
-            const response = await fetch('http://localhost:3000/api/admin_subscriptions');
+            const response = await fetch('http://localhost:3000/api/get_payments');
             if (response.ok) {
                 const jsonData = await response.json();
                 setInvoiceData(jsonData);
@@ -82,7 +82,7 @@ const IndexPage = () => {
     const handlePrint = async (record) => {
         const invoiceNo = record.invoiceId;
         try {
-            const response = await fetch('http://localhost:3000/api/invoices');
+            const response = await fetch('http://localhost:3000/api/get_payments');
             if (response.ok) {
                 const jsonData = await response.json();
                 jsonData.forEach(invoice => generatePDFReport(invoice));
@@ -169,30 +169,17 @@ const IndexPage = () => {
     };
 
     const columns = [
-        { title: 'Invoice ID', dataIndex: 'invoiceId', key: 'invoiceId' },
-        { title: 'Invoice Number', dataIndex: 'invoiceNumber', key: 'invoiceNumber' },
-        { title: 'Item', dataIndex: 'customerName', key: 'customerName' },
-        {
-            title: 'Description',
-            dataIndex: 'invoiceDescription',
-            key: 'invoiceDescription',
-            render: text => (
-                <div>
-                    {text.split('<br>').map((line, index) => (
-                        <span key={index}>
-                            {line}
-                            <br />
-                        </span>
-                    ))}
-                </div>
-            ),
-        },
+        { title: 'Transaction ID', dataIndex: 'PaymentId', key: 'PaymentId' },
+        // { title: 'Invoice Number', dataIndex: 'invoiceNumber', key: 'invoiceNumber' },
+        // { title: 'Item', dataIndex: 'customerName', key: 'customerName' },
         {
             title: 'Price',
             dataIndex: 'invoicePrice',
             key: 'invoicePrice',
         },
+        { title: 'Paymode', dataIndex: 'payment_method', key: 'payment_method' },
         { title: 'Status', dataIndex: 'status', key: 'status' },
+
         {
             title: 'Actions',
             key: 'actions',
@@ -207,12 +194,14 @@ const IndexPage = () => {
 
     const data = filteredData.map((item) => ({
         key: item.id,
-        invoiceId: item.id,
-        invoiceNumber: item.id,
+        PaymentId: item.id,
+        // invoiceNumber: item.id,
         customerName: item.subname,
-        invoiceDescription: item.description,
+        // invoiceDescription: item.description,
         invoicePrice: item.price,
-        status: item.PayStatus
+        payment_method: item.payment_method,
+        invoicePrice:item.amount,
+        status: item.status
     }));
 
     return (

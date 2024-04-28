@@ -133,7 +133,7 @@ const Home = () => {
     );
 
     return (
-        <div id="content" className="bg-gray-5 py-2 mt-40">
+        <div id="content" className="bg-gray-5 py-2 mt-20">
             <div className="container-custom">
                 <section className="max-w-8xl mx-auto">
                     <div className="grid grid-cols-1 lg:grid-cols-4 gap-8">

@@ -7,6 +7,7 @@ import DataTable from '../../../components/data-table';
 
 const IndexPage = () => {
   const [Categorydata, setData] = useState([]);
+  const [filteredData, setFilteredData] = useState([]);
   const [isModalVisible, setIsModalVisible] = useState(false);
   const [isEditModalVisible, setIsEditModalVisible] = useState(false);
   const [isLoading, setLoading] = useState(false);
@@ -24,6 +25,7 @@ const IndexPage = () => {
       if (response.ok) {
         const jsonData = await response.json();
         setData(jsonData);
+        setFilteredData(jsonData); // Set filtered data initially
       } else {
         console.error('Failed to fetch data:', response.status);
       }
@@ -143,6 +145,16 @@ const IndexPage = () => {
     }
   };
 
+  const handleSearch = (value) => {
+    const filtered = Categorydata.filter((item) =>
+      Object.values(item).some(
+        (val) =>
+          typeof val === 'string' && val.toLowerCase().includes(value.toLowerCase())
+      )
+    );
+    setFilteredData(filtered);
+  };
+
   const columns = [
     { title: 'Category ID', dataIndex: 'categoryId', key: 'categoryId' },
     { title: 'Category Name', dataIndex: 'categoryName', key: 'categoryName' },
@@ -152,7 +164,7 @@ const IndexPage = () => {
       key: 'actions',
       render: (text, record) => (
         <Space size="middle">
-          <Button icon={<EyeOutlined />} />
+          {/* <Button icon={<EyeOutlined />} /> */}
           <Button icon={<EditOutlined />} onClick={() => showEditModal(record)} />
           <Button icon={<DeleteOutlined />} onClick={() => handleDelete(record.categoryId)} />
         </Space>
@@ -160,7 +172,7 @@ const IndexPage = () => {
     },
   ];
 
-  const data = Categorydata.map((item) => ({
+  const data = filteredData.map((item) => ({
     key: item.id,
     categoryId: item.id,
     categoryName: item.catname,
@@ -170,6 +182,11 @@ const IndexPage = () => {
   return (
     <div>
       <Card>
+        <Input.Search
+          placeholder="Search..."
+          style={{ width: 200, marginBottom: 16, marginRight: 36 }}
+          onSearch={handleSearch}
+        />
         <Button type="primary" icon={<PlusOutlined />} onClick={showModal} style={{ marginBottom: 16 }}>
           Add New Category
         </Button>

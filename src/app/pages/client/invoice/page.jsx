@@ -76,9 +76,16 @@ const IndexPage = () => {
 
 
     const handlePrint = async (record) => {
-        const invoiceNo = record.invoiceId; // Assuming invoiceId is the correct property
+        console.log(record.invoiceId);
+        //const invoiceNo = record.invoiceId; // Assuming invoiceId is the correct property
         try {
-            const response = await fetch('http://localhost:3000/api/invoices');
+            const response = await fetch('http://localhost:3000/api/invoices', {
+                method: 'POST', // Change method to POST
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({ invoiceId: record.invoiceId }), // Send the invoiceId in the request body
+            });
             if (response.ok) {
                 const jsonData = await response.json();
                 console.log(jsonData);
@@ -95,6 +102,7 @@ const IndexPage = () => {
             setLoading(false);
         }
     };
+
 
 
     const generatePDFReport = (invoiceData) => {
@@ -193,7 +201,7 @@ const IndexPage = () => {
             key: 'actions',
             render: (text, record) => (
                 <Space size="middle">
-                    <Button icon={<PrinterOutlined />} onClick={() => handlePrint(record.invoiceId)} />
+                    <Button icon={<PrinterOutlined />} onClick={() => handlePrint(record)} />
                     <Button icon={<CloseOutlined />} onClick={() => handleCancel(record.invoiceId)} />
                     <Button icon={<DollarOutlined />} onClick={() => handlePay(record.invoiceId, record.invoicePrice, record.customerName)} />
                 </Space>

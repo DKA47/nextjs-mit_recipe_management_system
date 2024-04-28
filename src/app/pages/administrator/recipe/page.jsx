@@ -2,31 +2,38 @@
 
 import React, { useState, useEffect } from 'react';
 import { Button, Space, Card, Modal, Form, Input, Skeleton, Select } from 'antd';
-import { EyeOutlined, DeleteOutlined, EditOutlined, PlusOutlined } from '@ant-design/icons';
+import { DeleteOutlined, EditOutlined, PlusOutlined, VideoCameraOutlined } from '@ant-design/icons';
 import DataTable from '../../../components/data-table';
 
 const IndexPage = () => {
-  const [recipeData, setrecipeData] = useState([]);
-  const [categories, setcategoriesData] = useState([]);
+  const [recipeData, setRecipeData] = useState([]);
+  const [categories, setCategoriesData] = useState([]);
+  const [restrictionData, setRestrictionData] = useState([]);
   const [isModalVisible, setIsModalVisible] = useState(false);
   const [isEditModalVisible, setIsEditModalVisible] = useState(false);
   const [isLoading, setLoading] = useState(false);
   const [isDeleting, setDeleting] = useState(false);
   const [form] = Form.useForm();
+  const [selectedRestriction, setSelectedRestriction] = useState(null); // State to store selected restriction
+  const [searchValue, setSearchValue] = useState(''); // State to store search input value
 
   useEffect(() => {
-    fetchRecipes();
+    fetchRecipes(selectedRestriction); // Fetch recipes with selected restriction
     fetchCategories();
-  }, []);
+    fetchRestrictions();
+  }, [selectedRestriction]); // Fetch recipes whenever selectedRestriction changes
 
-  const fetchRecipes = async () => {
+  const fetchRecipes = async (restrictionId) => {
     setLoading(true);
     try {
-      const response = await fetch('http://localhost:3000/api/recipe');
+      let url = 'http://localhost:3000/api/recipe';
+      if (restrictionId) {
+        url += `?restrictionId=${restrictionId}`; // Append restrictionId to the URL if it exists
+      }
+      const response = await fetch(url);
       if (response.ok) {
         const jsonData = await response.json();
-        setrecipeData(jsonData);
-        console.log(jsonData);
+        setRecipeData(jsonData);
       } else {
         console.error('Failed to fetch data:', response.status);
       }
@@ -43,8 +50,24 @@ const IndexPage = () => {
       const response = await fetch('http://localhost:3000/api/get_recipe_cat');
       if (response.ok) {
         const jsonData = await response.json();
-        setcategoriesData(jsonData);
-        console.log(jsonData);
+        setCategoriesData(jsonData);
+      } else {
+        console.error('Failed to fetch data:', response.status);
+      }
+    } catch (error) {
+      console.error('Error fetching data:', error);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const fetchRestrictions = async () => {
+    setLoading(true);
+    try {
+      const response = await fetch('http://localhost:3000/api/get_restrictions');
+      if (response.ok) {
+        const jsonData = await response.json();
+        setRestrictionData(jsonData);
       } else {
         console.error('Failed to fetch data:', response.status);
       }
@@ -65,8 +88,7 @@ const IndexPage = () => {
     form.setFieldsValue({
       recipeId: record.recipeId,
       recipeName: record.RecipeName,
-      Ingredient: record.Ingredients,
-      categoryId: record.categoryId
+      categoryId: record.categoryId,
     });
   };
 
@@ -85,16 +107,15 @@ const IndexPage = () => {
         },
         body: JSON.stringify({
           recipeName: values.recipeName,
-          categoryId: values.categoryId
+          restrictionId: values.restrictionId,
+          categoryId: values.categoryId,
         }),
       });
 
       if (response.ok) {
         const responseData = await response.json();
-        console.log(responseData); // Log the response from the backend
-        if (responseData.message === "success") {
-          console.log("insert success");
-          fetchRecipes(); // Fetch recipes after successful insert
+        if (responseData.message === 'success') {
+          fetchRecipes(selectedRestriction); // Fetch recipes after successful insert
         } else {
           console.error('Failed request:', responseData.error); // Log any error message from the backend
         }
@@ -120,13 +141,13 @@ const IndexPage = () => {
         body: JSON.stringify({
           recipeId: values.recipeId,
           recipeName: values.recipeName,
-          categoryId: values.categoryId
+          categoryId: values.categoryId,
+          restrictionId: values.restrictionId,
         }),
       });
 
       if (response.ok) {
-        console.log("update success");
-        fetchRecipes();
+        fetchRecipes(selectedRestriction);
       } else {
         console.error('Failed request:', response.status);
       }
@@ -148,7 +169,6 @@ const IndexPage = () => {
   };
 
   const handleDelete = async (recipeId) => {
-    console.log(recipeId);
     setDeleting(true);
     try {
       const response = await fetch('http://localhost:3000/api/recipe', {
@@ -160,8 +180,7 @@ const IndexPage = () => {
       });
 
       if (response.ok) {
-        console.log('delete success');
-        fetchRecipes();
+        fetchRecipes(selectedRestriction);
       } else {
         console.error('Failed request:', response.status);
       }
@@ -172,16 +191,26 @@ const IndexPage = () => {
     }
   };
 
+  const handleSearch = (value) => {
+    setSearchValue(value);
+  };
+
+  const filteredData = recipeData.filter((item) =>
+    Object.values(item).some(
+      (val) => typeof val === 'string' && val.toLowerCase().includes(searchValue.toLowerCase())
+    )
+  );
+
   const columns = [
     { title: 'Recipe ID', dataIndex: 'recipeId', key: 'recipeId' },
     { title: 'Category ID', dataIndex: 'categoryId', key: 'categoryId' },
     { title: 'Recipe Name', dataIndex: 'RecipeName', key: 'RecipeName' },
+    { title: 'Restriction', dataIndex: 'restriction_id', key: 'restriction_id' },
     {
       title: 'Actions',
       key: 'actions',
       render: (text, record) => (
         <Space size="middle">
-          {/* <Button icon={<EyeOutlined />} /> */}
           <Button icon={<EditOutlined />} onClick={() => showEditModal(record)} />
           <Button icon={<DeleteOutlined />} onClick={() => handleDelete(record.recipeId)} />
         </Space>
@@ -189,25 +218,34 @@ const IndexPage = () => {
     },
   ];
 
-  const data = recipeData.map((item) => ({
+  const data = filteredData.map((item) => ({
     key: item.id,
     recipeId: item.id,
     categoryId: item.catid,
     RecipeName: item.recipename,
+    restriction_id: item.description
   }));
 
   return (
     <div>
       <Card>
-        <Button type="primary" icon={<PlusOutlined />} onClick={showModal} style={{ marginBottom: 16 }}>
-          Add New Recipe
-        </Button>
+        <div style={{ marginBottom: 16 }}>
+          <Button type="primary" icon={<PlusOutlined />} onClick={showModal}>
+            Add recipe
+          </Button>
+          <Input.Search
+            placeholder="Search..."
+            style={{ width: 200, marginLeft: 10 }}
+            onSearch={handleSearch}
+          />
+        </div>
+
         <Skeleton active={isLoading || isDeleting} loading={isLoading || isDeleting}>
           <DataTable dataSource={data} columns={columns} />
         </Skeleton>
         <Modal
           title="Add New recipe"
-          open={isModalVisible}
+          visible={isModalVisible}
           onCancel={handleCancel}
           footer={null}
         >
@@ -217,11 +255,16 @@ const IndexPage = () => {
             </Form.Item>
             <Form.Item label="Category" name="categoryId" rules={[{ required: true, message: 'Please select the category!' }]}>
               <Select>
-                {/* Add more static options as needed */}
-                 {categories.map(category => (
-                   <Select.Option key={category.id} value={category.id}>{category.catname}</Select.Option>
+                {categories.map(category => (
+                  <Select.Option key={category.id} value={category.id}>{category.catname}</Select.Option>
                 ))}
-
+              </Select>
+            </Form.Item>
+            <Form.Item label="Restriction" name="restrictionId" rules={[{ required: true, message: 'Please select the restriction!' }]}>
+              <Select>
+                {restrictionData.map(restriction => (
+                  <Select.Option key={restriction.restriction_id} value={restriction.restriction_id}>{restriction.description}</Select.Option>
+                ))}
               </Select>
             </Form.Item>
             <Form.Item>
@@ -233,7 +276,7 @@ const IndexPage = () => {
         </Modal>
         <Modal
           title="Edit Recipe"
-          open={isEditModalVisible}
+          visible={isEditModalVisible}
           onCancel={handleCancel}
           footer={null}
         >
@@ -246,9 +289,15 @@ const IndexPage = () => {
             </Form.Item>
             <Form.Item label="Category" name="categoryId" rules={[{ required: true, message: 'Please select the category!' }]}>
               <Select>
-                {/* Add more static options as needed */}
                 {categories.map(category => (
                   <Select.Option key={category.id} value={category.id}>{category.catname}</Select.Option>
+                ))}
+              </Select>
+            </Form.Item>
+            <Form.Item label="Restriction" name="restrictionId" rules={[{ required: true, message: 'Please select the restriction!' }]}>
+              <Select>
+                {restrictionData.map(restriction => (
+                  <Select.Option key={restriction.restriction_id} value={restriction.restriction_id}>{restriction.description}</Select.Option>
                 ))}
               </Select>
             </Form.Item>
@@ -265,3 +314,4 @@ const IndexPage = () => {
 };
 
 export default IndexPage;
+

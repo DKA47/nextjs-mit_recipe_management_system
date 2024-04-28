@@ -5,8 +5,11 @@ import { ArrowRightIcon } from '@heroicons/react/20/solid';
 import { message, Spin } from 'antd'; // Import message component from Ant Design
 import Link from 'next/link';
 import IMG from './acme-logo';
+import { useRouter } from 'next/navigation';
+
 
 export default function RegistrationForm() {
+  const router = useRouter();
   // Define state variables to hold form input values
   const [firstName, setFirstName] = useState('');
   const [lastName, setLastName] = useState('');
@@ -65,6 +68,7 @@ export default function RegistrationForm() {
 
       console.log('Registration successful:', responseData);
       message.success('Registration successful'); // Display success message using Ant Design message component
+      router.push('../pages/login');
       // Optionally, you can redirect the user to a success page or perform other actions
     } catch (error) {
       console.error('Error during registration:', error);

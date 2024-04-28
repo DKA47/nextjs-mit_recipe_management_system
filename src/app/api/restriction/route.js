@@ -10,7 +10,7 @@ export async function POST(request) {
 
         // Query the database using the extracted categoryId
         const users = await query({
-            query: "SELECT * FROM recipe JOIN diet_restrictions ON recipe.restriction_id =  diet_restrictions.restriction_id WHERE catid = ?",
+            query: "SELECT * FROM recipe WHERE catid = ?",
             values: [categoryId],
         });
 
@@ -32,7 +32,7 @@ export async function POST(request) {
 
 export async function GET(request) {
     const users = await query({
-        query: "SELECT * FROM recipe",
+        query: "SELECT * FROM diet_restrictions",
         values: [],
     });
 
@@ -45,10 +45,10 @@ export async function GET(request) {
 
 export async function DELETE(request) {
     try {
-        const { recipeId } = await request.json(); // Ensure that categoryId is extracted correctly from the request body
+        const { restrictionId } = await request.json(); // Ensure that categoryId is extracted correctly from the request body
         const deleteUser = await query({
-            query: "DELETE FROM recipe WHERE id = ?",
-            values: [recipeId],
+            query: "DELETE FROM diet_restrictions WHERE restriction_id = ?",
+            values: [restrictionId],
         });
         const result = deleteUser.affectedRows;
         let message = "";
@@ -83,10 +83,10 @@ export async function DELETE(request) {
 
 export async function PUT(request) {
     try {
-        const { restrictionId, recipeId, categoryId, recipeName} = await request.json();
+        const { restrictionId, restriction, description } = await request.json();
         const updateProducts = await query({
-            query: "UPDATE recipe SET restriction_id = ?, recipename = ?, catid = ? WHERE id = ?",
-            values: [restrictionId, recipeName, categoryId, recipeId],
+            query: "UPDATE diet_restrictions SET restriction = ?, description = ? WHERE restriction_id = ?",
+            values: [restriction, description, restrictionId],
         });
         const result = updateProducts.affectedRows;
         let message = "";

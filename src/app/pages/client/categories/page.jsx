@@ -2,23 +2,26 @@
 
 import React, { useState, useEffect } from 'react';
 import { Button, Space, Card, Modal, Form, Input, Skeleton } from 'antd';
-import { EyeOutlined, DeleteOutlined, EditOutlined, PlusOutlined } from '@ant-design/icons';
+import { EyeOutlined } from '@ant-design/icons';
 import DataTable from '../../../components/data-table';
 import { useRouter } from 'next/navigation'; // Import useRouter from Next.js
-import { useSearchParams } from 'next/navigation'; // Import useSearchParams from Next.js
 
 const IndexPage = () => {
   const router = useRouter(); // Initialize useRouter from Next.js
-  const params = useSearchParams(); // Get query parameters
-  const [Categorydata, setData] = useState([]);
-  const [isModalVisible, setIsModalVisible] = useState(false);
-  const [isEditModalVisible, setIsEditModalVisible] = useState(false);
+  const [categoryData, setCategoryData] = useState([]);
   const [isLoading, setLoading] = useState(false);
-  const [isDeleting, setDeleting] = useState(false);
-  const [form] = Form.useForm();
+  const [searchValue, setSearchValue] = useState('');
 
   useEffect(() => {
-    fetchData();
+    fetchData(); // Initial fetch
+
+    // Setup interval for fetching data every 4 seconds
+    const interval = setInterval(() => {
+      fetchData();
+    }, 8000);
+
+    // Clean up the interval to avoid memory leaks
+    return () => clearInterval(interval);
   }, []);
 
   const fetchData = async () => {
@@ -27,7 +30,7 @@ const IndexPage = () => {
       const response = await fetch('http://localhost:3000/api/categories');
       if (response.ok) {
         const jsonData = await response.json();
-        setData(jsonData);
+        setCategoryData(jsonData);
       } else {
         console.error('Failed to fetch data:', response.status);
       }
@@ -38,96 +41,21 @@ const IndexPage = () => {
     }
   };
 
-  const showModal = () => {
-    setIsModalVisible(true);
-    form.resetFields();
-  };
-
-  const showEditModal = (record) => {
-    setIsEditModalVisible(true);
-    form.setFieldsValue({
-      categoryId: record.categoryId,
-      categoryName: record.categoryName,
-      description: record.description,
-    });
-  };
-
-  const handleCancel = () => {
-    setIsModalVisible(false);
-    setIsEditModalVisible(false);
-  };
-
-  const handleInsert = async (values) => {
-    setLoading(true);
-    try {
-      const response = await fetch('http://localhost:3000/api/categories', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-          categoryName: values.categoryName,
-          description: values.description,
-        }),
-      });
-
-      if (response.ok) {
-        console.log("insert success");
-        fetchData();
-      } else {
-        console.error('Failed request:', response.status);
-      }
-    } catch (error) {
-      console.error('Error during request:', error);
-    } finally {
-      setLoading(false);
-      setIsModalVisible(false);
-    }
-  };
-
-  const handleUpdate = async (values) => {
-    setLoading(true);
-    try {
-      const response = await fetch(`http://localhost:3000/api/categories`, {
-        method: 'PUT',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-          categoryId: values.categoryId,
-          categoryName: values.categoryName,
-          description: values.description,
-        }),
-      });
-
-      if (response.ok) {
-        console.log("update success");
-        fetchData();
-      } else {
-        console.error('Failed request:', response.status);
-      }
-    } catch (error) {
-      console.error('Error during request:', error);
-    } finally {
-      setLoading(false);
-      setIsEditModalVisible(false);
-    }
-  };
-
-  const handleFinish = async (values) => {
-    event.preventDefault();
-    if (values.categoryId) {
-      handleUpdate(values);
-    } else {
-      handleInsert(values);
-    }
-  };
-
   const handleView = async (categoryId) => {
     // Construct the new path with query parameters
     const newPath = `/pages/client/recipe?CategoryId=${categoryId}`;
     router.push(newPath);
   };
+
+  const handleSearch = (value) => {
+    setSearchValue(value);
+  };
+
+  const filteredData = categoryData.filter((item) =>
+    Object.values(item).some(
+      (val) => typeof val === 'string' && val.toLowerCase().includes(searchValue.toLowerCase())
+    )
+  );
 
   const columns = [
     { title: 'Category ID', dataIndex: 'categoryId', key: 'categoryId' },
@@ -138,16 +66,13 @@ const IndexPage = () => {
       key: 'actions',
       render: (text, record) => (
         <Space size="middle">
-          {/* <Button icon={<EyeOutlined />} /> */}
-          {/* <Button icon={<EditOutlined />} onClick={() => showEditModal(record)} />
-          */}
           <Button icon={<EyeOutlined />} onClick={() => handleView(record.categoryId)} />
         </Space>
       ),
     },
   ];
 
-  const data = Categorydata.map((item) => ({
+  const data = filteredData.map((item) => ({
     key: item.id,
     categoryId: item.id,
     categoryName: item.catname,
@@ -157,58 +82,14 @@ const IndexPage = () => {
   return (
     <div>
       <Card>
-        {/* <Button type="primary" icon={<PlusOutlined />} onClick={showModal} style={{ marginBottom: 16 }}>
-          Add New Category
-        </Button> */}
-        <Skeleton active={isLoading || isDeleting} loading={isLoading || isDeleting}>
+        <Input.Search
+          placeholder="Search..."
+          style={{ width: 200, marginBottom: 16 }}
+          onSearch={handleSearch}
+        />
+        <Skeleton active={isLoading} loading={isLoading}>
           <DataTable dataSource={data} columns={columns} />
         </Skeleton>
-        <Modal
-          title="Add New Category"
-          visible={isModalVisible}
-          onCancel={handleCancel}
-          footer={null}
-        >
-          <Form form={form} layout="vertical" onFinish={handleFinish}>
-            <Form.Item name="categoryId" hidden>
-              <Input />
-            </Form.Item>
-            <Form.Item label="Category Name" name="categoryName" rules={[{ required: true, message: 'Please input the category name!' }]}>
-              <Input />
-            </Form.Item>
-            <Form.Item label="Description" name="description">
-              <Input />
-            </Form.Item>
-            <Form.Item>
-              <Button type="primary" htmlType="submit">
-                Add
-              </Button>
-            </Form.Item>
-          </Form>
-        </Modal>
-        <Modal
-          title="Edit Category"
-          visible={isEditModalVisible}
-          onCancel={handleCancel}
-          footer={null}
-        >
-          <Form form={form} layout="vertical" onFinish={handleFinish}>
-            <Form.Item name="categoryId" hidden>
-              <Input />
-            </Form.Item>
-            <Form.Item label="Category Name" name="categoryName" rules={[{ required: true, message: 'Please input the category name!' }]}>
-              <Input />
-            </Form.Item>
-            <Form.Item label="Description" name="description">
-              <Input />
-            </Form.Item>
-            <Form.Item>
-              <Button type="primary" htmlType="submit">
-                Update
-              </Button>
-            </Form.Item>
-          </Form>
-        </Modal>
       </Card>
     </div>
   );

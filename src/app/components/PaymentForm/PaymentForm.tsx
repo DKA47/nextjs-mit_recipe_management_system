@@ -43,64 +43,68 @@ export default function PaymentForm() {
     }
   }, []);
 
-  const onSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    const cardElement = elements?.getElement("card");
+const onSubmit = async (e: React.FormEvent) => {
+  e.preventDefault();
+  const cardElement = elements?.getElement("card");
+  const emailInput = document.querySelector('input[name="email"]'); // Get the email input
 
-    if (!cardElement) {
-      return;
-    }
+  if (!cardElement || !emailInput) {
+    return;
+  }
 
-    try {
-      setLoading(true);
+  try {
+    setLoading(true);
 
-      if (!stripe || !cardElement) return null;
-      const { data } = await axios.post("/api/create-payment-intent", {
-        data: { amount: usdPrice },
-      });
-      const clientSecret = data;
+    const email = (emailInput as HTMLInputElement).value; // Get the value of the email input
 
-      const { paymentIntent } = await stripe.confirmCardPayment(clientSecret, {
-        payment_method: { card: cardElement },
-      });
-
-      console.log("Payment Intent:", paymentIntent);
-
-      if (paymentIntent && Object.keys(paymentIntent).length !== 0) {
-        const { amount, id } = paymentIntent;
-
-        await axios.post("http://localhost:3000/api/payment", {
-          paymentIntent: { amount, id },
-        });
-
-        message.success("Payment completed successfully!");
-
-        sendEmail(amount, id);
-      } else {
-        throw new Error("Payment failed please try again later.");
-      }
-    } catch (error) {
-      console.log(error);
-      message.error(error.message || "Payment failed. Please try again later.");
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  const sendEmail = async (amount: number, id: string) => {
-    const response = await fetch("http://localhost:3000/api/sendEmail", {
-      method: "POST",
-      headers: {
-        "content-type": "application/json",
-      },
-      body: JSON.stringify({
-        subject,
-        msg,
-        payment: { amount, id },
-      }),
+    if (!stripe || !cardElement) return null;
+    const { data } = await axios.post("/api/create-payment-intent", {
+      data: { amount: usdPrice },
     });
-    console.log(await response.json());
-  };
+    const clientSecret = data;
+
+    const { paymentIntent } = await stripe.confirmCardPayment(clientSecret, {
+      payment_method: { card: cardElement },
+    });
+
+    console.log("Payment Intent:", paymentIntent);
+
+    if (paymentIntent && Object.keys(paymentIntent).length !== 0) {
+      const { amount, id } = paymentIntent;
+
+      await axios.post("http://localhost:3000/api/payment", {
+        paymentIntent: { amount, id },
+      });
+
+      message.success("Payment completed successfully!");
+
+      sendEmail(email, amount, id); // Pass email to sendEmail function
+    } else {
+      throw new Error("Payment failed please try again later.");
+    }
+  } catch (error) {
+    console.log(error);
+    message.error(error.message || "Payment failed. Please try again later.");
+  } finally {
+    setLoading(false);
+  }
+};
+
+ const sendEmail = async (email: string, amount: number, id: string) => {
+   const response = await fetch("http://localhost:3000/api/sendEmail", {
+     method: "POST",
+     headers: {
+       "content-type": "application/json",
+     },
+     body: JSON.stringify({
+       email, // Include the email in the request body
+       subject,
+       msg,
+       payment: { amount, id },
+     }),
+   });
+   console.log(await response.json());
+ };
 
   if (!urlParams) {
     return <div>Loading...</div>;
@@ -114,7 +118,15 @@ export default function PaymentForm() {
             <div className="mb-20">
               <IMG />
             </div>
-            <h1 className="text-lg font-bold mb-10">ENTER YOUR CARD DETAILS</h1>
+            <h1 className="text-lg font-bold mb-4">ENTER YOUR EMAIL</h1>
+            <input
+              type="email"
+              placeholder="Enter your email"
+              name="email"
+              className="w-full px-3 py-2 mb-6 border border-gray-300 rounded-md focus:outline-none focus:ring-indigo-500 focus:border-indigo-500"
+              // Add any necessary state and event handling for email input
+            />
+            <h1 className="text-lg font-bold mb-4">ENTER YOUR CARD DETAILS</h1>
             <CardElement
               options={{
                 style: {
@@ -134,7 +146,7 @@ export default function PaymentForm() {
           </div>
           <button
             type="submit"
-            className="flex w-full justify-center rounded-md border border-transparent bg-indigo-600 px-4 py-3 mt-20 text-sm font-medium text-white shadow-sm hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2"
+            className="flex w-full justify-center rounded-md border border-transparent bg-indigo-600 px-4 py-3 mt-6 text-sm font-medium text-white shadow-sm hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2"
             disabled={loading}
           >
             {loading
