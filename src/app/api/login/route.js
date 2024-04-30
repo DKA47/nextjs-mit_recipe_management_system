@@ -1,17 +1,5 @@
 import { query } from "../../../lib/db";
 
-// export async function getClientData(request) {
-//     const users = await query({
-//         query: "SELECT * FROM client",
-//         values: [],
-//     });
-
-//     let data = JSON.stringify(users);
-//     return new Response(data, {
-//         status: 200,
-//     });
-// }
-
 // Backend - POST Function
 export async function POST(request) {
     try {

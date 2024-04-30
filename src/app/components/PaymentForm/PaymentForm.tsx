@@ -43,68 +43,68 @@ export default function PaymentForm() {
     }
   }, []);
 
-const onSubmit = async (e: React.FormEvent) => {
-  e.preventDefault();
-  const cardElement = elements?.getElement("card");
-  const emailInput = document.querySelector('input[name="email"]'); // Get the email input
+  const onSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    const cardElement = elements?.getElement("card");
+    const emailInput = document.querySelector('input[name="email"]'); // Get the email input
 
-  if (!cardElement || !emailInput) {
-    return;
-  }
+    if (!cardElement || !emailInput) {
+      return;
+    }
 
-  try {
-    setLoading(true);
+    try {
+      setLoading(true);
 
-    const email = (emailInput as HTMLInputElement).value; // Get the value of the email input
+      const email = (emailInput as HTMLInputElement).value; // Get the value of the email input
 
-    if (!stripe || !cardElement) return null;
-    const { data } = await axios.post("/api/create-payment-intent", {
-      data: { amount: usdPrice },
-    });
-    const clientSecret = data;
+      if (!stripe || !cardElement) return null;
+      const { data } = await axios.post("/api/create-payment-intent", {
+        data: { amount: usdPrice },
+      });
+      const clientSecret = data;
 
-    const { paymentIntent } = await stripe.confirmCardPayment(clientSecret, {
-      payment_method: { card: cardElement },
-    });
-
-    console.log("Payment Intent:", paymentIntent);
-
-    if (paymentIntent && Object.keys(paymentIntent).length !== 0) {
-      const { amount, id } = paymentIntent;
-
-      await axios.post("http://localhost:3000/api/payment", {
-        paymentIntent: { amount, id },
+      const { paymentIntent } = await stripe.confirmCardPayment(clientSecret, {
+        payment_method: { card: cardElement },
       });
 
-      message.success("Payment completed successfully!");
+      console.log("Payment Intent:", paymentIntent);
 
-      sendEmail(email, amount, id); // Pass email to sendEmail function
-    } else {
-      throw new Error("Payment failed please try again later.");
+      if (paymentIntent && Object.keys(paymentIntent).length !== 0) {
+        const { amount, id } = paymentIntent;
+
+        await axios.post("http://localhost:3000/api/payment", {
+          paymentIntent, // Send the entire paymentIntent object
+        });
+        
+        message.success("Payment completed successfully!");
+
+        sendEmail(email, amount, id); // Pass email to sendEmail function
+      } else {
+        throw new Error("Payment failed please try again later.");
+      }
+    } catch (error) {
+      console.log(error);
+      message.error(error.message || "Payment failed. Please try again later.");
+    } finally {
+      setLoading(false);
     }
-  } catch (error) {
-    console.log(error);
-    message.error(error.message || "Payment failed. Please try again later.");
-  } finally {
-    setLoading(false);
-  }
-};
+  };
 
- const sendEmail = async (email: string, amount: number, id: string) => {
-   const response = await fetch("http://localhost:3000/api/sendEmail", {
-     method: "POST",
-     headers: {
-       "content-type": "application/json",
-     },
-     body: JSON.stringify({
-       email, // Include the email in the request body
-       subject,
-       msg,
-       payment: { amount, id },
-     }),
-   });
-   console.log(await response.json());
- };
+  const sendEmail = async (email: string, amount: number, id: string) => {
+    const response = await fetch("http://localhost:3000/api/sendEmail", {
+      method: "POST",
+      headers: {
+        "content-type": "application/json",
+      },
+      body: JSON.stringify({
+        email, // Include the email in the request body
+        subject,
+        msg,
+        payment: { amount, id },
+      }),
+    });
+    console.log(await response.json());
+  };
 
   if (!urlParams) {
     return <div>Loading...</div>;

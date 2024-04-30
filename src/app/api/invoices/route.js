@@ -12,8 +12,6 @@ import { query } from "../../../lib/db";
 //     });
 // }
 
-
-
 // POST request handler for fetching recipes based on category and restriction
 export async function POST(request) {
     try {
